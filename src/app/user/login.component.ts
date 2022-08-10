@@ -34,7 +34,9 @@ export class LoginComponent implements OnInit {
   }
 
   checkChanged(): void {
-    this.store.dispatch({ type: '[User] Toggle User Name Masking' })
+    this.store.dispatch(
+      { type: '[User] Toggle User Name Masking' }
+    );
   }
 
   login(loginForm: NgForm): void {
