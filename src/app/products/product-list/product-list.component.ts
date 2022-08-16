@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 import { Product } from '../product';
-import { ProductService } from '../product.service';
 import * as ProductActions from '../state/product.actions';
-import { getCurrentProduct, getShowProductCode, State } from '../state/product.reducer';
+import { getCurrentProduct, getError, getProducts, getShowProductCode, State } from '../state/product.reducer';
 
 @Component({
   selector: 'pm-product-list',
@@ -12,35 +12,27 @@ import { getCurrentProduct, getShowProductCode, State } from '../state/product.r
 })
 export class ProductListComponent implements OnInit {
   pageTitle = 'Products';
-  errorMessage: string;
 
-  displayCode: boolean;
-
-  products: Product[];
-
-  // Used to highlight the selected product in the list
-  selectedProduct: Product | null;
+  products$: Observable<Product[]>;
+  selectedProduct$: Observable<Product>;
+  displayCode$: Observable<boolean>;
+  errorMessage$: Observable<string>;
 
   constructor(
-    private store: Store<State>,
-    private productService: ProductService
-  ) { }
+    private store: Store<State>
+    ) { }
 
   ngOnInit(): void {
-    //TODO: Unsubscribe
-    this.store.select(getCurrentProduct).subscribe(
-      currentProduct => this.selectedProduct = currentProduct
-    );
+    
+    this.products$ = this.store.select(getProducts);
 
-    this.productService.getProducts().subscribe({
-      next: (products: Product[]) => this.products = products,
-      error: err => this.errorMessage = err
-    });
+    this.errorMessage$ = this.store.select(getError);
+    
+    this.store.dispatch(ProductActions.loadProducts());
+    
+    this.selectedProduct$ = this.store.select(getCurrentProduct);
 
-    //TODO: Unsubscribe
-    this.store.select(getShowProductCode).subscribe(
-      showProductCode => this.displayCode = showProductCode
-    );
+    this.displayCode$ = this.store.select(getShowProductCode);
   }
 
   checkChanged(): void {
